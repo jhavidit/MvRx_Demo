@@ -67,6 +67,7 @@ class MovieAdapter(private val wathclistListener: WatchlistListener) :
         .into(holder.posterImageView)
 
     holder.movieNameTextView.text = movie.name
+
     if (movie.isWatchlisted) {
       holder.watchlistButton.setImageResource(R.drawable.ic_remove_from_watchlist)
     } else {

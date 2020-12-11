@@ -35,7 +35,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.airbnb.mvrx.BaseMvRxFragment
+import androidx.lifecycle.Observer
+import com.airbnb.mvrx.*
 import kotlinx.android.synthetic.main.fragment_watchlist.*
 
 
@@ -44,6 +45,7 @@ class WatchlistFragment : BaseMvRxFragment() {
   private lateinit var movieAdapter: MovieAdapter
 
   // add ViewModel declaration here
+  private val watchlistViewModel: WatchListViewModel by activityViewModel()
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -56,20 +58,39 @@ class WatchlistFragment : BaseMvRxFragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
+    watchlistViewModel.errorMessage.observe(viewLifecycleOwner, Observer {
+      Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+    })
+
     movieAdapter = MovieAdapter(object : MovieAdapter.WatchlistListener {
       override fun addToWatchlist(movieId: Long) {
-        // call ViewModel to add movie to watchlist
+        watchlistViewModel.watchlistMovie(movieId)
       }
 
       override fun removeFromWatchlist(movieId: Long) {
-        // call ViewModel to remove movie from watchlist
+        watchlistViewModel.watchlistMovie(movieId)
       }
     })
     watchlist_movies_recyclerview.adapter = movieAdapter
   }
 
   override fun invalidate() {
-    // modify UI
+    withState(watchlistViewModel) { state ->
+      when (state.movies) {
+        is Loading -> {
+          showLoader()
+        }
+        is Success -> {
+          val watchlistedMovies = state.movies.invoke().filter {
+            it.isWatchlisted
+          }
+          showWatchlistedMovies(watchlistedMovies)
+        }
+        is Fail -> {
+          showError()
+        }
+      }
+    }
   }
 
 

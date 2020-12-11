@@ -37,6 +37,20 @@ class WatchlistRepository {
 
   private val movies = mutableListOf<MovieModel>()
 
+    fun watchlistMovie(movieId: Long): Observable<MovieModel> {
+        return Observable.fromCallable {
+            val movie = movies.first { movie -> movie.id == movieId }
+            movie.copy(isWatchlisted = true)
+        }
+    }
+
+    fun removeMovieFromWatchlist(movieId: Long): Observable<MovieModel> {
+        return Observable.fromCallable {
+            val movie = movies.first { movie -> movie.id == movieId }
+            movie.copy(isWatchlisted = false)
+        }
+    }
+
   fun getWatchlistedMovies() = Observable.fromCallable<List<MovieModel>> {
     Thread.sleep(3000)
     movies.addAll(listOf(
